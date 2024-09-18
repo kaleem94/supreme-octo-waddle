@@ -4,9 +4,44 @@ const blockGenerationDefinition = [
         "types": {
             "mov": {
                 "export": true,
-                "string": "MOV %1, %2",
+                "string": "MOV %1, %2\n",
                 "fields": ["DEST", "SRC"],
-            }
+            },
+            "add": {
+                "export": true,
+                "string": "ADD %1, %2, %3\n",
+                "fields": ["DEST", "SRC1", "SRC2"],
+            },
+            "sub": {
+                "export": true,
+                "string": "SUB %1, %2, %3\n",
+                "fields": ["DEST", "SRC1", "SRC2"],
+            },
+            "mul": {
+                "export": true,
+                "string": "MUL %1, %2, %3\n",
+                "fields": ["DEST", "SRC1", "SRC2"],
+            },
+            "div": {
+                "export": true,
+                "string": "DIV %1, %2, %3\n",
+                "fields": ["DEST", "SRC1", "SRC2"],
+            },
+            "cmp": {
+                "export": true,
+                "string": "CMP %1, %2\n",
+                "fields": ["SRC1", "SRC2"],
+            },
+            "branch": {
+                "export": true,
+                "string": "b %1\n",
+                "fields": ["LABEL"],
+            },
+            "branch_with_link": {
+                "export": true,
+                "string": "bl %1:\n",
+                "fields": ["LABEL"],
+            },
         },
         "default_listings" : {
 

@@ -3,9 +3,34 @@ import './blocks.js';
 import blockGenerationDefinition from './block_generation_definition.js';
 import blockDefinitions from './block_definitions.js';
 
-var workspace = Blockly.inject('blocklyDiv', { 
+
+// Use a unique storage key for this codelab
+const storageKey = 'jsonGeneratorWorkspace';
+
+export const save = function (workspace) {
+    const data = Blockly.serialization.workspaces.save(workspace);
+    window.localStorage?.setItem(storageKey, JSON.stringify(data));
+};
+
+export const deleteSave = function () {
+    window.localStorage?.removeItem(storageKey);
+    location.reload();
+};
+
+export const load = function (workspace) {
+    const data = window.localStorage?.getItem(storageKey);
+    if (!data) return;
+
+    // Don't emit events during loading.
+    Blockly.Events.disable();
+    Blockly.serialization.workspaces.load(JSON.parse(data), workspace, false);
+    Blockly.Events.enable();
+};
+
+var workspace = Blockly.inject('blocklyDiv', {
     toolbox: document.getElementById('toolbox')
 });
+
 
 Blockly.JavaScript.forBlock['custom_action'] = function (block) {
     const action = block.getFieldValue('ACTION');
@@ -58,8 +83,25 @@ function generateBlockGenerators() {
 // initialize the block generator with the block generation definition
 generateBlockGenerators();
 
+
+workspace.addChangeListener((e) => {
+    if (e.isUiEvent || e.type == Blockly.Events.FINISHED_LOADING ||
+        workspace.isDragging()) {
+      return;
+    }
+    save(workspace);
+    generateCode();
+    // console.log(ws);
+  });
 // Add a change listener to automatically generate code
-workspace.addChangeListener(generateCode);
+// workspace.addChangeListener(generateCode);
+workspace.addChangeListener((e) => {
+    if (e.isUiEvent || e.type == Blockly.Events.FINISHED_LOADING ||
+        workspace.isDragging()) {
+      return;
+    }
+    generateCode();
+  });
 
 // Function to run the generated code
 function runCode() {
@@ -85,11 +127,16 @@ function saveCode() {
 
 // Add event listeners to the buttons
 document.getElementById('saveButton').addEventListener('click', saveCode);
+document.getElementById('deleteWorkspace').addEventListener('click', deleteSave);
 
 // Function to resize the Blockly workspace
 function resizeBlocklyWorkspace() {
     Blockly.svgResize(workspace);
 }
+
+
+load(workspace);
+generateCode();
 
 // Add event listener to resize the Blockly workspace when the window is resized
 window.addEventListener('resize', resizeBlocklyWorkspace);

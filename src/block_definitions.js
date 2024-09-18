@@ -165,7 +165,7 @@ const blockDefinitions = [
         "helpUrl": ""
     },
     {
-        "type": "b",
+        "type": "branch",
         "message0": "B %1",
         "args0": [
             {
@@ -181,7 +181,7 @@ const blockDefinitions = [
         "helpUrl": ""
     },
     {
-        "type": "bl",
+        "type": "branch_with_link",
         "message0": "BL %1",
         "args0": [
             {
