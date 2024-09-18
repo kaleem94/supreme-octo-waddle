@@ -1,8 +1,9 @@
 import './blocks.js';
 // import './generators.js';
 import blockGenerationDefinition from './block_generation_definition.js';
+import blockDefinitions from './block_definitions.js';
 
-var workspace = Blockly.inject('blocklyDiv', {
+var workspace = Blockly.inject('blocklyDiv', { 
     toolbox: document.getElementById('toolbox')
 });
 
@@ -15,37 +16,30 @@ Blockly.JavaScript.forBlock['custom_action'] = function (block) {
 // Function to generate and display the code
 function generateCode() {
     var code = Blockly.JavaScript.workspaceToCode(workspace);
-    // var code = Blockly.JavaScript.workspaceToCode(workspace);
     document.getElementById('codeOutput').textContent = code;
 }
 
+const PATTERN_VARIABLE = /[^%]%(\d+)/g;
 
-// Step 1: Define the original function
-const originalFunction = (arg1, arg2) => {
-    return arg1 + arg2;
-};
 
-// Step 2: Create a partially applied function
-const createPartialFunction = (fn, fixedArg2) => {
-    return (arg1) => {
-        return fn(arg1, fixedArg2);
-    };
-};
-
-// Step 3: Assign the partially applied function to a variable
-const partiallyAppliedFunction = createPartialFunction(originalFunction, 5);
-
-// Step 4: Call the partially applied function with one argument
-console.log("output is " + partiallyAppliedFunction(3)); // Output: 8
-
-const generatorFunction = (block, type) => {
-    var code = '...' + '...' + type;
+const generatorFunction = (block, type, typeconfig) => {
+    var code = "";
+    const matches = typeconfig.string.match(PATTERN_VARIABLE);
+    var outString = typeconfig.string;
+    matches.forEach((match) => {
+        const indexNumber = parseInt(match.substring(2, match.length));
+        match = match.replace(/\s/g, '');
+        const fieldName = typeconfig.fields[indexNumber - 1];
+        outString = outString.replace(match, block.getFieldValue(fieldName));
+    });
+    code = outString;
     return code;
 };
 
 const generatorFunctionWithTypes = (pseudoFunction, type) => {
+    const typeconfig = blockGenerationDefinition[0]["types"][type];
     return (block) => {
-        return pseudoFunction(block, type);
+        return pseudoFunction(block, type, typeconfig);
     }
 };
 
@@ -70,9 +64,9 @@ workspace.addChangeListener(generateCode);
 // Function to run the generated code
 function runCode() {
     var code = Blockly.JavaScript.workspaceToCode(workspace);
-    console.log(code); // Output the generated code
-    // Execute the generated code (be careful with eval)
-    eval(code);
+    // console.log(code); // Output the generated code
+    // // Execute the generated code (be careful with eval)
+    // eval(code);
 }
 
 // Function to save the generated code to a file
