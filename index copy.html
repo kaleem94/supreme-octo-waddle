@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Blockly Block with Code Generation</title>
+    <!-- <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/blockly/media/css/blockly.css"> -->
+    <script src="node_modules/blockly/blockly_compressed.js"></script>
+    <script src="node_modules/blockly/blocks_compressed.js"></script>
+    <script src="node_modules/blockly/javascript_compressed.js"></script>
+    <link rel="stylesheet" href="node_modules/blockly/msg/js/en.js">
+    <style>
+        #blocklyDiv {
+            height: 480px;
+            width: 400px;
+            border: 1px solid black;
+            display: inline-block;
+        }
+        #codeOutput {
+            height: 480px;
+            width: 400px;
+            border: 1px solid black;
+            display: inline-block;
+            padding: 10px;
+            overflow: auto;
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+        }
+        button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Custom Blockly Block Example</h1>
+    <div id="blocklyDiv"></div>
+    <div id="codeOutput"></div>
+    <button id="runButton">Generate Code</button>
+
+    <script>
+        // Define the custom block before initializing Blockly
+        Blockly.Blocks['custom_action'] = {
+            init: function() {
+                this.jsonInit({
+                    "type": "custom_action",
+                    "message0": "Do something with %1",
+                    "args0": [
+                        {
+                            "type": "field_input",
+                            "name": "ACTION",
+                            "text": "default action"
+                        }
+                    ],
+                    "previousStatement": null,
+                    "nextStatement": null,
+                    "colour": 160,
+                    "tooltip": "Custom action block",
+                    "helpUrl": ""
+                });
+            }
+        };
+
+        // Generate JavaScript code for the custom block
+        Blockly.JavaScript.forBlock['custom_action'] = function(block) {
+            const action = block.getFieldValue('ACTION');
+            const code = `console.log("${action} fefd");\n`;
+            return code;
+        };
+        
+        // Generate JavaScript code for the custom block
+        // Blockly.Generator['custom_action'] = function(block) {
+        //     const action = block.getFieldValue('ACTION');
+        //     const code = `console.log("${action}");\n`;
+        //     return code;
+        // };
+
+        // Initialize Blockly
+        const workspace = Blockly.inject('blocklyDiv', {
+            toolbox: `
+                <xml>
+                    <block type="custom_action"></block>
+                </xml>`
+        });
+
+        // Generate code button event
+        document.getElementById('runButton').addEventListener('click', function() {
+            const code = Blockly.JavaScript.workspaceToCode(workspace);
+            document.getElementById('codeOutput').innerText = code;
+        });
+    </script>
+</body>
+</html>
