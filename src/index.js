@@ -154,12 +154,16 @@ divider.addEventListener('mousedown', (e) => {
     document.addEventListener('mouseup', onMouseUp);
 });
 
+const MAX_WIDTH_PERCENTAGE = 80;
+const MIN_WIDTH_PERCENTAGE = 40;
 function onMouseMove(e) {
+    
     if (!isDragging) return;
     const container = document.getElementById('container');
     const containerRect = container.getBoundingClientRect();
     const offsetX = e.clientX - containerRect.left;
     const percentage = (offsetX / containerRect.width) * 100;
+    if (percentage < MIN_WIDTH_PERCENTAGE || percentage > MAX_WIDTH_PERCENTAGE) return;
     document.getElementById('blocklyDiv').style.width = `${percentage}%`;
     document.getElementById('codeContainer').style.width = `${100 - percentage}%`;
     divider.style.left = `${percentage}%`;
