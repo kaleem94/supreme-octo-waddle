@@ -1,8 +1,12 @@
+// import * as Blockly from 'https://unpkg.com/blockly/blockly.min.js';
+
+
 import './blocks.js';
+
 // import './generators.js';
 import blockGenerationDefinition from './block_generation_definition.js';
 import blockDefinitions from './block_definitions.js';
-
+// import './styles.css';
 
 // Use a unique storage key for this codelab
 const storageKey = 'jsonGeneratorWorkspace';
@@ -44,7 +48,7 @@ function generateCode() {
     document.getElementById('codeOutput').textContent = code;
 }
 
-const PATTERN_VARIABLE = /[^%]%(\d+)/g;
+const PATTERN_VARIABLE = /(?:^|[^%])%(\d+)/g;
 
 
 const generatorFunction = (block, type, typeconfig) => {
@@ -52,7 +56,9 @@ const generatorFunction = (block, type, typeconfig) => {
     const matches = typeconfig.string.match(PATTERN_VARIABLE);
     var outString = typeconfig.string;
     matches.forEach((match) => {
-        const indexNumber = parseInt(match.substring(2, match.length));
+        var match1 = match.replace(/[\s%]/g, '');
+        const indexNumber = parseInt(match1);
+        if(isNaN(indexNumber)) return "error generaiting code";
         match = match.replace(/\s/g, '');
         const fieldName = typeconfig.fields[indexNumber - 1];
         outString = outString.replace(match, block.getFieldValue(fieldName));

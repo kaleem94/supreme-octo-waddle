@@ -195,6 +195,23 @@ const blockDefinitions = [
         "colour": 230,
         "tooltip": "Branch with Link to LABEL",
         "helpUrl": ""
+    },
+    // label block
+    {
+        "type": "label_simple",
+        "message0": "%1:",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "LABEL",
+                "text": "label"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 230,
+        "tooltip": "Label",
+        "helpUrl": ""
     }
 ];
 

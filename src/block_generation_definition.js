@@ -42,6 +42,11 @@ const blockGenerationDefinition = [
                 "string": "bl %1:\n",
                 "fields": ["LABEL"],
             },
+            "label_simple": {
+                "export": true,
+                "string": "%1:\n",
+                "fields": ["LABEL"],
+            },
         },
         "default_listings" : {
 
