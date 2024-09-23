@@ -212,7 +212,26 @@ const blockDefinitions = [
         "colour": 230,
         "tooltip": "Label",
         "helpUrl": ""
-    }
+    },
+    {
+        "type": "branch_with_select",
+        "message0": "B %1",
+        "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "LABEL_DROPDOWN",
+                "options": [[
+                    "select an option",
+                    "OPTIONNAME"
+                ]]
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 230,
+        "tooltip": "Branch to LABEL",
+        "helpUrl": ""
+    },
 ];
 
 export default blockDefinitions;

@@ -1,3 +1,6 @@
 node_modules
 src/blockly/
 build/blockly
+test_jtest/node_modules
+.vscode
+package-lock.json

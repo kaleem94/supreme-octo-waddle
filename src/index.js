@@ -1,8 +1,10 @@
 import './blocks.js';
 import blockGenerationDefinition from './block_generation_definition.js';
-import blockDefinitions from './block_definitions.js';
+// import blockDefinitions from './block_definitions.js';
 
 const storageKey = 'jsonGeneratorWorkspace';
+
+var listOfDropDowns = {};
 
 export const save = (workspace) => {
     const data = Blockly.serialization.workspaces.save(workspace);
@@ -48,6 +50,48 @@ export const resizeBlocklyWorkspace = (workspace) => {
     Blockly.svgResize(workspace);
 };
 
+
+
+Blockly.Extensions.register('dynamic_menu_extension',
+    function () {
+        console.log("Testing json dd append");
+        Blockly.getInput('LABEL_DROPDOWN')
+        // workspace.getInput('LABEL_DROPDOWN')
+            .appendField(new Blockly.FieldDropdown(
+                () => {
+                    const options = [];
+                    options.push(["_start", "_start"]);
+                    return options;
+                }));
+    }
+);
+
+export const handleDropdownLists = (listnames, labelname) => {
+    // var dropdowns = [];
+    // listnames.forEach((listname) => {
+    //     listOfDropDowns[listname].forEach((dropdown) => {
+    //         dropdowns.push([dropdown, dropdown]);
+    //     });
+    // });
+    // return dropdowns;
+    return listnames.flatMap(listname =>
+        listOfDropDowns[listname].map(dropdown => [dropdown, dropdown])
+    );
+};
+
+export const registerDropdownHandlers = () => {
+    blockGenerationDefinition.forEach((definition) => {
+        const types = definition.types;
+        Object.keys(types).forEach((type) => {
+            const typeconfig = types[type];
+            if (typeconfig["listHandler"]) {
+                Object.keys(typeconfig["listHandler"]).forEach((listName) => {
+                });
+            }
+        });
+    });
+};
+
 export const generatorFunction = (block, type, typeconfig) => {
     const PATTERN_VARIABLE = /(?:^|[^%])%(\d+)/g;
     let code = "";
@@ -58,7 +102,11 @@ export const generatorFunction = (block, type, typeconfig) => {
         const indexNumber = parseInt(match1);
         if (isNaN(indexNumber)) return "error generating code";
         const fieldName = typeconfig.fields[indexNumber - 1];
+        if (match[0] === ' ') {
+            match = match.replace(' ', '');
+        }
         outString = outString.replace(match, block.getFieldValue(fieldName));
+        checkAndUpdateListNames(typeconfig, block, fieldName);
     });
     code = outString;
     return code;
@@ -71,16 +119,29 @@ export const generatorFunctionWithTypes = (pseudoFunction, type) => {
     }
 };
 
+export const initializeDropDowns = () => {
+    blockGenerationDefinition.forEach((definition) => {
+        const defaultListings = definition.default_listings;
+        Object.keys(defaultListings).forEach((dropdown) => {
+            listOfDropDowns[dropdown] = defaultListings[dropdown];
+        });
+    });
+};
+
 export const generateBlockGenerators = () => {
     blockGenerationDefinition.forEach((definition) => {
         const types = definition.types;
+        // console.log(types);
         Object.keys(types).forEach((type) => {
             Blockly.JavaScript.forBlock[type] = generatorFunctionWithTypes(generatorFunction, type);
         });
     });
 };
 
+
+
 export const generateAndUpdateCode = (workspace) => {
+    // console.log(workspace);
     var code = generateCode(workspace);
     document.getElementById('codeOutput').textContent = code;
 };
@@ -130,24 +191,42 @@ export const setupDividerDragging = (divider, container, blocklyDiv, codeContain
 };
 
 // Example usage
-const workspace = Blockly.inject('blocklyDiv', {
-    toolbox: document.getElementById('toolbox')
-});
+initializeDropDowns();
+// console.log(listOfDropDowns);
+initializeBlocklyWorkspace();
+function checkAndUpdateListNames(typeconfig, block, fieldName) {
+    if (typeconfig["listNames"]) {
+        Object.keys(typeconfig["listNames"]).forEach((listName) => {
+            const dropdownName = typeconfig["listNames"][listName];
+            const dropdownValue = block.getFieldValue(fieldName);
+            if (!listOfDropDowns[dropdownName].includes(dropdownValue)) {
+                listOfDropDowns[dropdownName].push(dropdownValue);
+            }
+        });
+    }
+}
 
-generateBlockGenerators();
-initializeWorkspace(workspace);
+function initializeBlocklyWorkspace() {
+    const workspace = Blockly.inject('blocklyDiv', {
+        toolbox: document.getElementById('toolbox')
+    });
+    // console.log(workspace);
+    generateBlockGenerators();
+    initializeWorkspace(workspace);
 
-document.getElementById('saveButton').addEventListener('click', () => {
-    const code = generateCode(workspace);
-    saveCodeToFile(code);
-});
+    document.getElementById('saveButton').addEventListener('click', () => {
+        const code = generateCode(workspace);
+        saveCodeToFile(code);
+    });
 
-document.getElementById('deleteWorkspace').addEventListener('click', deleteSave);
+    document.getElementById('deleteWorkspace').addEventListener('click', deleteSave);
 
-window.addEventListener('resize', () => resizeBlocklyWorkspace(workspace));
+    window.addEventListener('resize', () => resizeBlocklyWorkspace(workspace));
 
-const divider = document.getElementById('divider');
-const container = document.getElementById('container');
-const blocklyDiv = document.getElementById('blocklyDiv');
-const codeContainer = document.getElementById('codeContainer');
-setupDividerDragging(divider, container, blocklyDiv, codeContainer, workspace);
+    const divider = document.getElementById('divider');
+    const container = document.getElementById('container');
+    const blocklyDiv = document.getElementById('blocklyDiv');
+    const codeContainer = document.getElementById('codeContainer');
+    setupDividerDragging(divider, container, blocklyDiv, codeContainer, workspace);
+}
+
