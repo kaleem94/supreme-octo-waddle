@@ -1,6 +1,7 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = (env) => {
     const shouldClean = env && env.clean;
@@ -18,18 +19,31 @@ module.exports = (env) => {
         },
         module: {
             rules: [
+                // {
+                //     test: /\.js$/,
+                //     exclude: /node_modules/,
+                //     use: {
+                //         loader: 'babel-loader',
+                //         options: {
+                //             presets: ['@babel/preset-env']
+                //         }
+                //     }
+                // },
                 {
-                    test: /\.js$/,
-                    exclude: /node_modules/,
-                    use: {
-                        loader: 'babel-loader',
-                        options: {
-                            presets: ['@babel/preset-env']
-                        }
-                    }
-                }
+                    // Load CSS files. They can be imported into JS files.
+                    test: /\.css$/i,
+                    use: ['style-loader', 'css-loader'],
+                },
             ]
         },
-        plugins: shouldClean ? [new CleanWebpackPlugin()] : []
+        plugins: [
+            new HtmlWebpackPlugin({
+                template: './src/index.html', // Path to your HTML template
+                filename: 'index.html', // Output filename
+                chunks: ['main'] // Include only the main chunk
+            }),
+            ...(shouldClean ? [new CleanWebpackPlugin()] : [])
+        ],
+
     };
 };

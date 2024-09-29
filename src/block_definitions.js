@@ -214,7 +214,7 @@ const blockDefinitions = [
         "helpUrl": ""
     },
     {
-        "type": "branch_with_select",
+        "type": "branch_to_label_dropdown",
         "message0": "B %1",
         "args0": [
             {
@@ -229,7 +229,7 @@ const blockDefinitions = [
         "previousStatement": null,
         "nextStatement": null,
         "colour": 230,
-        "tooltip": "Branch to LABEL",
+        "tooltip": "Branch to LABEL_DROPDOWN",
         "helpUrl": ""
     },
 ];

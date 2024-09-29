@@ -49,7 +49,7 @@ const blockGenerationDefinition = [
                 // "listHandler": "handleLabelDropdown",
                 "listNames": ["dropdownLabel", "dropdownLabel2"],
             },
-            "branch_with_select": {
+            "branch_to_label_dropdown": {
                 "export": true,
                 "string": "B %1:\n",
                 "fields": ["LABEL_DROPDOWN"],

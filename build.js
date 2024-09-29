@@ -18,6 +18,12 @@ function copyFiles(src, dest) {
         const srcPath = path.join(src, entry.name);
         const destPath = path.join(dest, entry.name);
 
+        // Skip the blockly folder
+        if (entry.name === 'blockly') {
+            return;
+        }
+
+
         if (entry.isDirectory()) {
             if (!fs.existsSync(destPath)) {
                 fs.mkdirSync(destPath);

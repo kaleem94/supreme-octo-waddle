@@ -51,20 +51,36 @@ export const resizeBlocklyWorkspace = (workspace) => {
 };
 
 
+function updateAllDropdownOptions(workspace) {
+    console.log('updating dropdown options');
+    const blocks = workspace.getAllBlocks();
 
-Blockly.Extensions.register('dynamic_menu_extension',
-    function () {
-        console.log("Testing json dd append");
-        Blockly.getInput('LABEL_DROPDOWN')
-        // workspace.getInput('LABEL_DROPDOWN')
-            .appendField(new Blockly.FieldDropdown(
-                () => {
-                    const options = [];
-                    options.push(["_start", "_start"]);
-                    return options;
-                }));
-    }
-);
+    blocks.forEach(block => {
+        if (block.type === 'branch_with_select') {
+            const dropdownField = block.getField('LABEL_DROPDOWN');
+            const options = getDynamicOptions(); // Fetch dynamic options
+            console.log(options);
+            console.log(block);
+            // block.setFieldValue(options[0].value, 'LABEL_DROPDOWN');
+            // Clear current options
+            // dropdownField.clearOptions();
+
+            // Add new dynamic options
+            // options.forEach(option => {
+            //     dropdownField.appendOption(option.text, option.value);
+            // });
+        }
+    });
+}
+
+// Example function to get dynamic options
+function getDynamicOptions() {
+    return [
+        { text: "Option 1", value: "OPTION1" },
+        { text: "Option 2", value: "OPTION2" },
+        { text: "Option 3", value: "OPTION3" }
+    ];
+}
 
 export const handleDropdownLists = (listnames, labelname) => {
     // var dropdowns = [];
@@ -106,7 +122,7 @@ export const generatorFunction = (block, type, typeconfig) => {
             match = match.replace(' ', '');
         }
         outString = outString.replace(match, block.getFieldValue(fieldName));
-        checkAndUpdateListNames(typeconfig, block, fieldName);
+        // checkAndUpdateListNames(typeconfig, block, fieldName);
     });
     code = outString;
     return code;
@@ -154,6 +170,7 @@ export const initializeWorkspace = (workspace) => {
         save(workspace);
         console.log('generating code');
         generateAndUpdateCode(workspace);
+        updateAllDropdownOptions(workspace);
         console.log('done generating code');
     });
 
@@ -190,10 +207,7 @@ export const setupDividerDragging = (divider, container, blocklyDiv, codeContain
     });
 };
 
-// Example usage
-initializeDropDowns();
-// console.log(listOfDropDowns);
-initializeBlocklyWorkspace();
+
 function checkAndUpdateListNames(typeconfig, block, fieldName) {
     if (typeconfig["listNames"]) {
         Object.keys(typeconfig["listNames"]).forEach((listName) => {
@@ -204,12 +218,26 @@ function checkAndUpdateListNames(typeconfig, block, fieldName) {
             }
         });
     }
+    console.log(listOfDropDowns);
+}
+
+function dummyDropDownHandler() {
+    const dropDownBlock = Blockly.Blocks['branch_to_label_dropdown'];
+    console.log(dropDownBlock);
+    const optionsNew = getDynamicOptions();
+    const options = dropdownBlock.options;
+    console.log(options);
+    // options.forEach(option => {
+    //     dropDownBlock.appendOption(option.text, option.value);
+    // });
 }
 
 function initializeBlocklyWorkspace() {
     const workspace = Blockly.inject('blocklyDiv', {
         toolbox: document.getElementById('toolbox')
     });
+    dummyDropDownHandler();
+    initializeDropDowns();
     // console.log(workspace);
     generateBlockGenerators();
     initializeWorkspace(workspace);
@@ -230,3 +258,5 @@ function initializeBlocklyWorkspace() {
     setupDividerDragging(divider, container, blocklyDiv, codeContainer, workspace);
 }
 
+// initializeDropDowns();
+initializeBlocklyWorkspace();
