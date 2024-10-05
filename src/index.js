@@ -1,6 +1,5 @@
 import './blocks.js';
 import blockGenerationDefinition from './block_generation_definition.js';
-// import blockDefinitions from './block_definitions.js';
 
 const storageKey = 'jsonGeneratorWorkspace';
 
@@ -51,45 +50,7 @@ export const resizeBlocklyWorkspace = (workspace) => {
 };
 
 
-function updateAllDropdownOptions(workspace) {
-    console.log('updating dropdown options');
-    const blocks = workspace.getAllBlocks();
-
-    blocks.forEach(block => {
-        if (block.type === 'branch_with_select') {
-            const dropdownField = block.getField('LABEL_DROPDOWN');
-            const options = getDynamicOptions(); // Fetch dynamic options
-            console.log(options);
-            console.log(block);
-            // block.setFieldValue(options[0].value, 'LABEL_DROPDOWN');
-            // Clear current options
-            // dropdownField.clearOptions();
-
-            // Add new dynamic options
-            // options.forEach(option => {
-            //     dropdownField.appendOption(option.text, option.value);
-            // });
-        }
-    });
-}
-
-// Example function to get dynamic options
-function getDynamicOptions() {
-    return [
-        { text: "Option 1", value: "OPTION1" },
-        { text: "Option 2", value: "OPTION2" },
-        { text: "Option 3", value: "OPTION3" }
-    ];
-}
-
-export const handleDropdownLists = (listnames, labelname) => {
-    // var dropdowns = [];
-    // listnames.forEach((listname) => {
-    //     listOfDropDowns[listname].forEach((dropdown) => {
-    //         dropdowns.push([dropdown, dropdown]);
-    //     });
-    // });
-    // return dropdowns;
+export const handleDropdownLists = (listnames) => {
     return listnames.flatMap(listname =>
         listOfDropDowns[listname].map(dropdown => [dropdown, dropdown])
     );
@@ -108,6 +69,53 @@ export const registerDropdownHandlers = () => {
     });
 };
 
+
+export const dropdownGenericUpdater = (block, type, typeconfig, extensionName) => {
+    const updateHandler = typeconfig.updateDropdown;
+    if (updateHandler) {
+        Object.keys(updateHandler).forEach((dropdownName) => {
+            const dropdownField = block.getField(updateHandler[dropdownName]);
+            if (dropdownField) {
+                const options = handleDropdownLists([dropdownName]);
+                // const options = handleDropdownLists([dropdownName], updateHandler[dropdownName]);
+                dropdownField.menuGenerator_ = options;
+                // dropdownField.setValue(options[0][1]);
+            }
+        });
+    }
+};
+
+export const extensionFunctionWithTypes = (pseudoFunction, type, extensionName) => {
+    const typeconfig = blockGenerationDefinition[0]["types"][type];
+    return (block) => {
+        return pseudoFunction(block, type, typeconfig, extensionName);
+    }
+};
+
+
+export const registerExtensionHandlers = () => {
+    blockGenerationDefinition.forEach((definition) => {
+        const types = definition.types;
+        if ("extensions" in blockDefinitions[0].type) {
+            const extensionname = blockDefinitions[0].type.extensions;
+            Object.keys(types).forEach((type) => {
+                const typeconfig = types[type];
+                if (typeconfig["updateDropdown"]) {
+                    // Blockly.Extensions.register(`dropdown_generic_updater_${type}`, dropdownGenericUpdater);
+                }
+            });
+        }
+    });
+}
+
+// export const extensionFunctionWithTypes = (pseudoFunction, type) => {
+//     const typeconfig = blockGenerationDefinition[0]["types"][type];
+//     return (block) => {
+//         return pseudoFunction(block, type, typeconfig);
+//     }
+// };
+
+
 export const generatorFunction = (block, type, typeconfig) => {
     const PATTERN_VARIABLE = /(?:^|[^%])%(\d+)/g;
     let code = "";
@@ -122,7 +130,7 @@ export const generatorFunction = (block, type, typeconfig) => {
             match = match.replace(' ', '');
         }
         outString = outString.replace(match, block.getFieldValue(fieldName));
-        // checkAndUpdateListNames(typeconfig, block, fieldName);
+        checkAndUpdateListNames(typeconfig, block, fieldName);
     });
     code = outString;
     return code;
@@ -136,6 +144,13 @@ export const generatorFunctionWithTypes = (pseudoFunction, type) => {
 };
 
 export const initializeDropDowns = () => {
+    // listOfDropDowns = {};
+    for (let key in listOfDropDowns) {
+        if (listOfDropDowns.hasOwnProperty(key)) {
+            delete listOfDropDowns[key];
+        }
+    }
+
     blockGenerationDefinition.forEach((definition) => {
         const defaultListings = definition.default_listings;
         Object.keys(defaultListings).forEach((dropdown) => {
@@ -158,19 +173,48 @@ export const generateBlockGenerators = () => {
 
 export const generateAndUpdateCode = (workspace) => {
     // console.log(workspace);
+    // listOfDropDowns = null;
+    // listOfDropDowns = {};
+    initializeDropDowns();
     var code = generateCode(workspace);
     document.getElementById('codeOutput').textContent = code;
 };
 
+export const clearListOfDropDowns = () => {
+    // listOfDropDowns = {};
+    console.log('clearing dropdowns');
+    console.log(listOfDropDowns);
+    // Clear the object without reassigning
+    for (let key in listOfDropDowns) {
+        if (listOfDropDowns.hasOwnProperty(key)) {
+            delete listOfDropDowns[key];
+        }
+    }
+    console.log('cleared dropdowns');
+    console.log(listOfDropDowns);
+    initializeDropDowns();
+
+};
+
 export const initializeWorkspace = (workspace) => {
     workspace.addChangeListener((e) => {
-        if (e.isUiEvent || e.type == Blockly.Events.FINISHED_LOADING || workspace.isDragging()) {
+        if (e.isUiEvent || e.type == Blockly.Events.FINISHED_LOADING || workspace.isDragging() || e.type == Blockly.Events.BlockFieldIntermediateChange) {
             return;
         }
         save(workspace);
         console.log('generating code');
+        // listOfDropDowns = {};
+        // for (let key in listOfDropDowns) {
+        //     if (listOfDropDowns.hasOwnProperty(key)) {
+        //         delete listOfDropDowns[key];
+        //     }
+        // }
+        // initializeDropDowns();
         generateAndUpdateCode(workspace);
-        updateAllDropdownOptions(workspace);
+        listOfDropDowns = {};
+        clearListOfDropDowns();
+        // initializeDropDowns();
+        // updateAllDropdownOptions(workspace);
         console.log('done generating code');
     });
 
@@ -207,11 +251,26 @@ export const setupDividerDragging = (divider, container, blocklyDiv, codeContain
     });
 };
 
+// Register the dynamic menu extension for branch_to_label_dropdown
+Blockly.Extensions.register('dynamic_menu_extension_branch_to_label', function () {
+    const dropdownField = this.getField('LABEL_DROPDOWN');
+    // dropdownField.menuGenerator_ = Blockly.Blocks['branch_to_label_dropdown'].options || [["Label1", "Label1"]];
+    console.log(dropdownField);
+    // dropdownField.menuGenerator_ =  dropdownField.menuGenerator_ || [["Label1", "Label1"]];
+    // dropdownField.menuGenerator_ = [];
+    dropdownField.menuGenerator_.push(["Label2", "Label2"]);
+    console.log("dynamic menu extension");
+});
+
+// // // Apply the extension to the block
+// Blockly.Blocks['branch_to_label_dropdown'].extensions = [
+//     'dynamic_menu_extension_branch_to_label'
+// ];
 
 function checkAndUpdateListNames(typeconfig, block, fieldName) {
-    if (typeconfig["listNames"]) {
-        Object.keys(typeconfig["listNames"]).forEach((listName) => {
-            const dropdownName = typeconfig["listNames"][listName];
+    if (typeconfig["updateList"]) {
+        Object.keys(typeconfig["updateList"][fieldName]).forEach((listName) => {
+            const dropdownName = typeconfig["updateList"][fieldName][listName];
             const dropdownValue = block.getFieldValue(fieldName);
             if (!listOfDropDowns[dropdownName].includes(dropdownValue)) {
                 listOfDropDowns[dropdownName].push(dropdownValue);
@@ -236,9 +295,10 @@ function initializeBlocklyWorkspace() {
     const workspace = Blockly.inject('blocklyDiv', {
         toolbox: document.getElementById('toolbox')
     });
-    dummyDropDownHandler();
+
+
     initializeDropDowns();
-    // console.log(workspace);
+    console.log(listOfDropDowns);
     generateBlockGenerators();
     initializeWorkspace(workspace);
 

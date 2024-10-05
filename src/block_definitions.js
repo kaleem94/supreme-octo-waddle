@@ -230,7 +230,8 @@ const blockDefinitions = [
         "nextStatement": null,
         "colour": 230,
         "tooltip": "Branch to LABEL_DROPDOWN",
-        "helpUrl": ""
+        "helpUrl": "",
+        "extensions": ["dynamic_menu_extension_branch_to_label"]
     },
 ];
 

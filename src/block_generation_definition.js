@@ -46,19 +46,18 @@ const blockGenerationDefinition = [
                 "export": true,
                 "string": "%1:\n",
                 "fields": ["LABEL"],
-                // "listHandler": "handleLabelDropdown",
-                "listNames": ["dropdownLabel", "dropdownLabel2"],
+                "updateList": { "LABEL": ["dropdownLabel", "dropdownLabel2"] },
             },
             "branch_to_label_dropdown": {
                 "export": true,
                 "string": "B %1:\n",
                 "fields": ["LABEL_DROPDOWN"],
                 "updateDropdown": { "LABEL_DROPDOWN": ["dropdownLabel"] },
-                "listHandler": { "handleLabelDropdown": "LABEL_DROPDOWN", },
+                "listHandler": { "dynamic_menu_extension_branch_to_label": "updateDropdown", },
             },
         },
         "default_listings": {
-            "dropdownLabel": ["label1", "label2", "label3"],
+            "dropdownLabel": [".start", ".end", ".loop"],
             "dropdownLabel2": ["label4", "label5", "label6"],
         },
     }
