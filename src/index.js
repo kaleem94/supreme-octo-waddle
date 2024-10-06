@@ -299,10 +299,14 @@ function checkAndUpdateListNames(typeconfig, block, fieldName) {
 
 var workspace;
 
-function initializeBlocklyWorkspace() {
+async function initializeBlocklyWorkspace() {
     loadListOfDropDownsFromCookie();
+
+    const toolbox = await fetch("./arm/toolbox.json").then(response => response.json());
+
+
     workspace = Blockly.inject('blocklyDiv', {
-        toolbox: document.getElementById('toolbox')
+        toolbox: toolbox,
     });
     registerExtensionHandlers();
 
