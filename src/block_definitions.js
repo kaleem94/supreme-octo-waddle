@@ -222,7 +222,7 @@ const blockDefinitions = [
                 "name": "LABEL_DROPDOWN",
                 "options": [[
                     "select an option",
-                    "OPTIONNAME"
+                    "select an option"
                 ]]
             }
         ],

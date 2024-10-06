@@ -7,8 +7,28 @@ const storageKey = 'jsonGeneratorWorkspace';
 let blockListToRunExtension = {};
 var listOfDropDowns = {};
 
+// Function to save listOfDropDowns to a cookie
+function saveListOfDropDownsToCookie() {
+    const jsonString = JSON.stringify(listOfDropDowns);
+    document.cookie = `listOfDropDowns=${encodeURIComponent(jsonString)}; path=/; max-age=31536000`; // 1 year
+}
+
+// Function to load listOfDropDowns from a cookie
+function loadListOfDropDownsFromCookie() {
+    const cookies = document.cookie.split('; ');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.split('=');
+        if (name === 'listOfDropDowns') {
+            listOfDropDowns = JSON.parse(decodeURIComponent(value));
+            console.log('loaded dropdowns');
+            console.log(listOfDropDowns);
+            break;
+        }
+    }
+}
+
 export const updateExtensionList = (block, type, extensionName) => {
-    console.log("updating extension list " + extensionName);
+    // console.log("updating extension list " + extensionName);
     if (blockListToRunExtension[type] === undefined) {
         blockListToRunExtension[type] = {};
     }
@@ -18,16 +38,12 @@ export const updateExtensionList = (block, type, extensionName) => {
     else {
         blockListToRunExtension[type][extensionName].push(block);
     }
-
-    console.log("extension list ");
-    console.log(blockListToRunExtension);
 };
 
 
 export const runExtension = () => {
     for (const type in blockListToRunExtension) {
         for (const extensionName in blockListToRunExtension[type]) {
-            console.log("running extension " + extensionName + " for " + type);
             for (const block of blockListToRunExtension[type][extensionName]) {
                 extensionFunctionWithTypes(block, type, extensionName);
             }
@@ -87,50 +103,45 @@ export const handleDropdownLists = (listnames) => {
     );
 };
 
-export const registerDropdownHandlers = () => {
-    blockGenerationDefinition.forEach((definition) => {
-        const types = definition.types;
-        Object.keys(types).forEach((type) => {
-            const typeconfig = types[type];
-            if (typeconfig["listHandler"]) {
-                Object.keys(typeconfig["listHandler"]).forEach((listName) => {
-                });
-            }
-        });
-    });
-};
-
 
 export const extensionFunctionWithTypes = (block, type, extensionName) => {
     const typeconfig = blockGenerationDefinition[0]["types"][type];
-    console.log("block  is " + block);
-    console.log("block type is " + block.type);
-    console.log("block field is " + block.getField('LABEL_DROPDOWN'));
-    block.getField('LABEL_DROPDOWN').menuGenerator_ = [];
-    block.getField('LABEL_DROPDOWN').menuGenerator_.push(["Label2", "Label2"]);
-    listOfDropDowns["dropdownLabel"].forEach((dropdown) => {
-        block.getField('LABEL_DROPDOWN').menuGenerator_.push([dropdown, dropdown]);
-    });
+
+    if (typeconfig["listHandler"] && extensionName in typeconfig["listHandler"]) {
+
+        if (typeconfig && typeconfig["listHandler"][extensionName]) {
+            if ("updateDropdown" === typeconfig["listHandler"][extensionName]) {
+                for (const labelName in typeconfig["updateDropdown"]) {
+                    const dropdownHandler = block.getField(labelName);
+                    const currentValue = dropdownHandler.getValue();
+                    console.log(currentValue);
+                    console.log(dropdownHandler.menuGenerator_)
+                    dropdownHandler.menuGenerator_ = [];
+                    dropdownHandler.menuGenerator_.push(["Label2", "Label2"]);
+                    typeconfig["updateDropdown"][labelName].forEach((dropDownalistName) => {
+                        listOfDropDowns[dropDownalistName].forEach((dropdown) => {
+                            dropdownHandler.menuGenerator_.push([dropdown, dropdown]);
+                        });
+                    });
+                }
+            }
+        }
+    }
 };
 
 
 export const registerExtensionHandlers = () => {
-    blockGenerationDefinition.forEach((definition) => {
-
-        for (const blockDefinition of blockDefinitions) {
-            if ("extensions" in blockDefinition) {
-                const extensionNames = blockDefinition.extensions;
-                const typeName = blockDefinition.type;
-                console.log("registering extensions for " + typeName + " with " + extensionNames);
-                extensionNames.forEach((extensionName) => {
-                    Blockly.Extensions.register(extensionName, function () {
-                        extensionFunctionWithTypes(this, typeName, extensionName);
-                    });
+    for (const blockDefinition of blockDefinitions) {
+        if ("extensions" in blockDefinition) {
+            const extensionNames = blockDefinition.extensions;
+            const typeName = blockDefinition.type;
+            extensionNames.forEach((extensionName) => {
+                Blockly.Extensions.register(extensionName, function () {
+                    extensionFunctionWithTypes(this, typeName, extensionName);
                 });
-            }
+            });
         }
-
-    });
+    }
 }
 
 
@@ -151,30 +162,12 @@ export const generatorFunction = (block, type, typeconfig) => {
         outString = outString.replace(match, block.getFieldValue(fieldName));
         checkAndUpdateListNames(typeconfig, block, fieldName);
     });
-    // if (type === "branch_to_label_dropdown") {
-    //     extensionFunctionWithTypes(block, type, "");
-    // }
 
-    console.log(typeconfig);
     if (typeconfig["listHandler"]) {
         Object.keys(typeconfig["listHandler"]).forEach((listName) => {
             updateExtensionList(block, type, listName);
         });
     }
-    // for (const blockDefinition of blockDefinitions) {
-    //     console.log("checking extensions for " + type);
-    //     if ("extensions" in blockDefinition) {
-    //         const extensionNames = blockDefinition.extensions;
-    //         const typeName = blockDefinition.type;
-    //         console.log("checking extensions for " + typeName + " with " + extensionNames);
-    //         if (typeName == type) {
-    //             console.log("running extensions update data for " + type + " with " + extensionNames);
-    //             extensionNames.forEach((extensionName) => {
-    //                 updateExtensionList(block, type, extensionName);
-    //             });
-    //         }
-    //     }
-    // }
 
     code = outString;
     return code;
@@ -188,7 +181,6 @@ export const generatorFunctionWithTypes = (pseudoFunction, type) => {
 };
 
 export const initializeDropDowns = () => {
-    // listOfDropDowns = {};
     for (let key in listOfDropDowns) {
         if (listOfDropDowns.hasOwnProperty(key)) {
             delete listOfDropDowns[key];
@@ -217,14 +209,16 @@ export const generateBlockGenerators = () => {
 
 export const generateAndUpdateCode = (workspace) => {
     initializeDropDowns();
+    console.log('generating code');
     var code = generateCode(workspace);
     runExtension();
+    saveListOfDropDownsToCookie()
     document.getElementById('codeOutput').textContent = code;
 };
 
 export const clearListOfDropDowns = () => {
     console.log('clearing dropdowns');
-    console.log(listOfDropDowns);
+    // console.log(listOfDropDowns);
     // Clear the object without reassigning
     for (let key in listOfDropDowns) {
         if (listOfDropDowns.hasOwnProperty(key)) {
@@ -232,12 +226,13 @@ export const clearListOfDropDowns = () => {
         }
     }
     console.log('cleared dropdowns');
-    console.log(listOfDropDowns);
+    // console.log(listOfDropDowns);
     initializeDropDowns();
 
 };
 
 export const initializeWorkspace = (workspace) => {
+    generateCode(workspace);
     workspace.addChangeListener((e) => {
         if (e.isUiEvent || e.type == Blockly.Events.FINISHED_LOADING || workspace.isDragging() || e.type == Blockly.Events.BlockFieldIntermediateChange) {
             return;
@@ -245,8 +240,8 @@ export const initializeWorkspace = (workspace) => {
         save(workspace);
         console.log('generating code');
         generateAndUpdateCode(workspace);
-        listOfDropDowns = {};
-        clearListOfDropDowns();
+        // listOfDropDowns = {};
+        // clearListOfDropDowns();
         console.log('done generating code');
     });
 
@@ -294,22 +289,23 @@ function checkAndUpdateListNames(typeconfig, block, fieldName) {
             }
         });
     }
-    console.log(listOfDropDowns);
+    // console.log(listOfDropDowns);
 }
 
 
 var workspace;
 
 function initializeBlocklyWorkspace() {
+    loadListOfDropDownsFromCookie();
     workspace = Blockly.inject('blocklyDiv', {
         toolbox: document.getElementById('toolbox')
     });
-
-
-    initializeDropDowns();
-    console.log(listOfDropDowns);
-    generateBlockGenerators();
     registerExtensionHandlers();
+
+
+    // initializeDropDowns();
+    // console.log(listOfDropDowns);
+    generateBlockGenerators();
     initializeWorkspace(workspace);
 
     document.getElementById('saveButton').addEventListener('click', () => {

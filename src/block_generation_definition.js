@@ -57,7 +57,7 @@ const blockGenerationDefinition = [
             },
         },
         "default_listings": {
-            "dropdownLabel": [".start", ".end", ".loop"],
+            "dropdownLabel": [".start", ".end", ".loop", "select an option"],
             "dropdownLabel2": ["label4", "label5", "label6"],
         },
     }
