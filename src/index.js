@@ -4,8 +4,37 @@ import blockDefinitions from './block_definitions.js';
 
 const storageKey = 'jsonGeneratorWorkspace';
 
-var blockListToRunExtension = {};
+let blockListToRunExtension = {};
 var listOfDropDowns = {};
+
+export const updateExtensionList = (block, type, extensionName) => {
+    console.log("updating extension list " + extensionName);
+    if (blockListToRunExtension[type] === undefined) {
+        blockListToRunExtension[type] = {};
+    }
+    if (blockListToRunExtension[type][extensionName] === undefined) {
+        blockListToRunExtension[type][extensionName] = [block];
+    }
+    else {
+        blockListToRunExtension[type][extensionName].push(block);
+    }
+
+    console.log("extension list ");
+    console.log(blockListToRunExtension);
+};
+
+
+export const runExtension = () => {
+    for (const type in blockListToRunExtension) {
+        for (const extensionName in blockListToRunExtension[type]) {
+            console.log("running extension " + extensionName + " for " + type);
+            for (const block of blockListToRunExtension[type][extensionName]) {
+                extensionFunctionWithTypes(block, type, extensionName);
+            }
+        }
+    }
+    blockListToRunExtension = {};
+};
 
 export const save = (workspace) => {
     const data = Blockly.serialization.workspaces.save(workspace);
@@ -74,7 +103,9 @@ export const registerDropdownHandlers = () => {
 
 export const extensionFunctionWithTypes = (block, type, extensionName) => {
     const typeconfig = blockGenerationDefinition[0]["types"][type];
-    console.log("block is " + block.getField('LABEL_DROPDOWN'));
+    console.log("block  is " + block);
+    console.log("block type is " + block.type);
+    console.log("block field is " + block.getField('LABEL_DROPDOWN'));
     block.getField('LABEL_DROPDOWN').menuGenerator_ = [];
     block.getField('LABEL_DROPDOWN').menuGenerator_.push(["Label2", "Label2"]);
     listOfDropDowns["dropdownLabel"].forEach((dropdown) => {
@@ -120,9 +151,31 @@ export const generatorFunction = (block, type, typeconfig) => {
         outString = outString.replace(match, block.getFieldValue(fieldName));
         checkAndUpdateListNames(typeconfig, block, fieldName);
     });
-    if (type === "branch_to_label_dropdown") {
-        extensionFunctionWithTypes(block, type, "");
+    // if (type === "branch_to_label_dropdown") {
+    //     extensionFunctionWithTypes(block, type, "");
+    // }
+
+    console.log(typeconfig);
+    if (typeconfig["listHandler"]) {
+        Object.keys(typeconfig["listHandler"]).forEach((listName) => {
+            updateExtensionList(block, type, listName);
+        });
     }
+    // for (const blockDefinition of blockDefinitions) {
+    //     console.log("checking extensions for " + type);
+    //     if ("extensions" in blockDefinition) {
+    //         const extensionNames = blockDefinition.extensions;
+    //         const typeName = blockDefinition.type;
+    //         console.log("checking extensions for " + typeName + " with " + extensionNames);
+    //         if (typeName == type) {
+    //             console.log("running extensions update data for " + type + " with " + extensionNames);
+    //             extensionNames.forEach((extensionName) => {
+    //                 updateExtensionList(block, type, extensionName);
+    //             });
+    //         }
+    //     }
+    // }
+
     code = outString;
     return code;
 };
@@ -165,6 +218,7 @@ export const generateBlockGenerators = () => {
 export const generateAndUpdateCode = (workspace) => {
     initializeDropDowns();
     var code = generateCode(workspace);
+    runExtension();
     document.getElementById('codeOutput').textContent = code;
 };
 
