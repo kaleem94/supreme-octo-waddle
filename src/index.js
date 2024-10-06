@@ -4,6 +4,7 @@ import blockDefinitions from './block_definitions.js';
 
 const storageKey = 'jsonGeneratorWorkspace';
 
+var blockListToRunExtension = {};
 var listOfDropDowns = {};
 
 export const save = (workspace) => {
@@ -74,10 +75,11 @@ export const registerDropdownHandlers = () => {
 export const extensionFunctionWithTypes = (block, type, extensionName) => {
     const typeconfig = blockGenerationDefinition[0]["types"][type];
     console.log("block is " + block.getField('LABEL_DROPDOWN'));
+    block.getField('LABEL_DROPDOWN').menuGenerator_ = [];
     block.getField('LABEL_DROPDOWN').menuGenerator_.push(["Label2", "Label2"]);
-    return () => {
-        return pseudoFunction(block, type, typeconfig, extensionName);
-    }
+    listOfDropDowns["dropdownLabel"].forEach((dropdown) => {
+        block.getField('LABEL_DROPDOWN').menuGenerator_.push([dropdown, dropdown]);
+    });
 };
 
 
@@ -90,10 +92,9 @@ export const registerExtensionHandlers = () => {
                 const typeName = blockDefinition.type;
                 console.log("registering extensions for " + typeName + " with " + extensionNames);
                 extensionNames.forEach((extensionName) => {
-                    Blockly.Extensions.register(extensionName,
-                        function () {
-                            extensionFunctionWithTypes(this, typeName, extensionName)
-                        });
+                    Blockly.Extensions.register(extensionName, function () {
+                        extensionFunctionWithTypes(this, typeName, extensionName);
+                    });
                 });
             }
         }
@@ -119,6 +120,9 @@ export const generatorFunction = (block, type, typeconfig) => {
         outString = outString.replace(match, block.getFieldValue(fieldName));
         checkAndUpdateListNames(typeconfig, block, fieldName);
     });
+    if (type === "branch_to_label_dropdown") {
+        extensionFunctionWithTypes(block, type, "");
+    }
     code = outString;
     return code;
 };
