@@ -118,7 +118,6 @@ export const extensionFunctionWithTypes = (block, type, extensionName) => {
                     // console.log(currentValue);
                     // console.log(dropdownHandler.menuGenerator_)
                     dropdownHandler.menuGenerator_ = [];
-                    dropdownHandler.menuGenerator_.push(["Label2", "Label2"]);
                     typeconfig["updateDropdown"][labelName].forEach((dropDownalistName) => {
                         if (listOfDropDowns[dropDownalistName] !== undefined) {
                             listOfDropDowns[dropDownalistName].forEach((dropdown) => {
