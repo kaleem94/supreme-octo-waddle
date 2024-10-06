@@ -8,23 +8,19 @@ const storageKey = 'jsonGeneratorWorkspace' + foldername;
 let blockListToRunExtension = {};
 var listOfDropDowns = {};
 
-// Function to save listOfDropDowns to a cookie
-function saveListOfDropDownsToCookie() {
+// Function to save listOfDropDowns to localStorage
+function persistDropDownsToLocalStorage() {
     const jsonString = JSON.stringify(listOfDropDowns);
-    document.cookie = `listOfDropDowns=${encodeURIComponent(jsonString)}; path=/; max-age=31536000`; // 1 year
+    window.localStorage.setItem(storageKey + '_dropdowns', jsonString);
 }
 
-// Function to load listOfDropDowns from a cookie
-function loadListOfDropDownsFromCookie() {
-    const cookies = document.cookie.split('; ');
-    for (let cookie of cookies) {
-        const [name, value] = cookie.split('=');
-        if (name === 'listOfDropDowns') {
-            listOfDropDowns = JSON.parse(decodeURIComponent(value));
-            // console.log('loaded dropdowns');
-            // console.log(listOfDropDowns);
-            break;
-        }
+// Function to load listOfDropDowns from localStorage
+function fetchDropDownsFromLocalStorage() {
+    const data = window.localStorage.getItem(storageKey + '_dropdowns');
+    if (data) {
+        listOfDropDowns = JSON.parse(data);
+        // console.log('loaded dropdowns');
+        // console.log(listOfDropDowns);
     }
 }
 
@@ -215,8 +211,8 @@ export const generateAndUpdateCode = (workspace) => {
     // console.log('generating code');
     initializeDropDowns();
     var code = generateCode(workspace);
-    saveListOfDropDownsToCookie()
-    loadListOfDropDownsFromCookie();
+    persistDropDownsToLocalStorage()
+    fetchDropDownsFromLocalStorage();
     runExtension();
     document.getElementById('codeOutput').textContent = code;
 };
@@ -301,7 +297,7 @@ function checkAndUpdateListNames(typeconfig, block, fieldName) {
 var workspace;
 
 async function initializeBlocklyWorkspace() {
-    loadListOfDropDownsFromCookie();
+    fetchDropDownsFromLocalStorage();
 
     
 
