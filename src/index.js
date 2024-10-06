@@ -1,8 +1,9 @@
 import './blocks.js';
-import blockGenerationDefinition from './block_generation_definition.js';
 import blockDefinitions from './block_definitions.js';
+import blockGenerationDefinition from './block_generation_definition.js';
+import { foldername } from "./utils.js";
 
-const storageKey = 'jsonGeneratorWorkspace';
+const storageKey = 'jsonGeneratorWorkspace' + foldername;
 
 let blockListToRunExtension = {};
 var listOfDropDowns = {};
@@ -20,8 +21,8 @@ function loadListOfDropDownsFromCookie() {
         const [name, value] = cookie.split('=');
         if (name === 'listOfDropDowns') {
             listOfDropDowns = JSON.parse(decodeURIComponent(value));
-            console.log('loaded dropdowns');
-            console.log(listOfDropDowns);
+            // console.log('loaded dropdowns');
+            // console.log(listOfDropDowns);
             break;
         }
     }
@@ -198,9 +199,10 @@ export const initializeDropDowns = () => {
 };
 
 export const generateBlockGenerators = () => {
+    console.log(blockGenerationDefinition);
     blockGenerationDefinition.forEach((definition) => {
         const types = definition.types;
-        // console.log(types);
+        console.log(types);
         Object.keys(types).forEach((type) => {
             Blockly.JavaScript.forBlock[type] = generatorFunctionWithTypes(generatorFunction, type);
         });
@@ -302,7 +304,9 @@ var workspace;
 async function initializeBlocklyWorkspace() {
     loadListOfDropDownsFromCookie();
 
-    const toolbox = await fetch("./arm/toolbox.json").then(response => response.json());
+    
+
+    const toolbox = await fetch("./" + foldername + "/toolbox.json").then(response => response.json());
 
 
     workspace = Blockly.inject('blocklyDiv', {

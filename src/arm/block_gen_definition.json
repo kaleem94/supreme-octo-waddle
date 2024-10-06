@@ -1,0 +1,113 @@
+[
+    {
+        "types": {
+            "mov": {
+                "export": true,
+                "string": "MOV %1, %2\n",
+                "fields": [
+                    "DEST",
+                    "SRC"
+                ]
+            },
+            "add": {
+                "export": true,
+                "string": "ADD %1, %2, %3\n",
+                "fields": [
+                    "DEST",
+                    "SRC1",
+                    "SRC2"
+                ]
+            },
+            "sub": {
+                "export": true,
+                "string": "SUB %1, %2, %3\n",
+                "fields": [
+                    "DEST",
+                    "SRC1",
+                    "SRC2"
+                ]
+            },
+            "mul": {
+                "export": true,
+                "string": "MUL %1, %2, %3\n",
+                "fields": [
+                    "DEST",
+                    "SRC1",
+                    "SRC2"
+                ]
+            },
+            "div": {
+                "export": true,
+                "string": "DIV %1, %2, %3\n",
+                "fields": [
+                    "DEST",
+                    "SRC1",
+                    "SRC2"
+                ]
+            },
+            "cmp": {
+                "export": true,
+                "string": "CMP %1, %2\n",
+                "fields": [
+                    "SRC1",
+                    "SRC2"
+                ]
+            },
+            "branch": {
+                "export": true,
+                "string": "b %1\n",
+                "fields": [
+                    "LABEL"
+                ]
+            },
+            "branch_with_link": {
+                "export": true,
+                "string": "bl %1:\n",
+                "fields": [
+                    "LABEL"
+                ]
+            },
+            "label_simple": {
+                "export": true,
+                "string": "%1:\n",
+                "fields": [
+                    "LABEL"
+                ],
+                "updateList": {
+                    "LABEL": [
+                        "dropdownLabel",
+                        "dropdownLabel2"
+                    ]
+                }
+            },
+            "branch_to_label_dropdown": {
+                "export": true,
+                "string": "B %1:\n",
+                "fields": [
+                    "LABEL_DROPDOWN"
+                ],
+                "updateDropdown": {
+                    "LABEL_DROPDOWN": [
+                        "dropdownLabel"
+                    ]
+                },
+                "listHandler": {
+                    "dynamic_menu_extension_branch_to_label": "updateDropdown"
+                }
+            }
+        },
+        "default_listings": {
+            "dropdownLabel": [
+                ".start",
+                ".end",
+                ".loop",
+                "select an option"
+            ],
+            "dropdownLabel2": [
+                "label4",
+                "label5",
+                "label6"
+            ]
+        }
+    }
+]

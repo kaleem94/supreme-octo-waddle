@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Blockly Assembly: Arm</title>
+    <title>Blockly Assembly</title>
     <link rel="stylesheet" href="./styles.css">
     <!-- <script src="https://unpkg.com/blockly/blockly.min.js"></script> -->
     <script src="https://unpkg.com/blockly@11.1.1/blockly.min.js "></script>
@@ -13,7 +13,36 @@
 </head>
 
 <body>
-    <h2>Blockly assembly: arm</h1>
+    <!-- <h2>Blockly Assembly</h2> -->
+    <div style="float: right;">
+        <label for="pageSelect">Language:</label>
+        <select id="pageSelect" onchange="redirectToPage()">
+            <option value="arm">Arm</option>
+            <option value="riscv">RISC-V</option>
+            <option value="x86">x86</option>
+        </select>
+    </div>
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        function redirectToPage() {
+            const select = document.getElementById('pageSelect');
+            const selectedValue = select.value;
+            if (selectedValue) {
+                const currentUrl = window.location.href.split('?')[0];
+                window.location.href = `${currentUrl}?lang=${selectedValue}`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const select = document.getElementById('pageSelect');
+            const lang = getQueryParam('lang') || 'arm';
+            select.value = lang;
+        });
+    </script>
         <div id="container">
             <div id="blocklyDiv"></div>
             <div id="divider"></div>
