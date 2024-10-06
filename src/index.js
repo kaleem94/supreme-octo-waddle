@@ -114,14 +114,16 @@ export const extensionFunctionWithTypes = (block, type, extensionName) => {
                 for (const labelName in typeconfig["updateDropdown"]) {
                     const dropdownHandler = block.getField(labelName);
                     const currentValue = dropdownHandler.getValue();
-                    console.log(currentValue);
-                    console.log(dropdownHandler.menuGenerator_)
+                    // console.log(currentValue);
+                    // console.log(dropdownHandler.menuGenerator_)
                     dropdownHandler.menuGenerator_ = [];
                     dropdownHandler.menuGenerator_.push(["Label2", "Label2"]);
                     typeconfig["updateDropdown"][labelName].forEach((dropDownalistName) => {
-                        listOfDropDowns[dropDownalistName].forEach((dropdown) => {
-                            dropdownHandler.menuGenerator_.push([dropdown, dropdown]);
-                        });
+                        if (listOfDropDowns[dropDownalistName] !== undefined) {
+                            listOfDropDowns[dropDownalistName].forEach((dropdown) => {
+                                dropdownHandler.menuGenerator_.push([dropdown, dropdown]);
+                            });
+                        }
                     });
                 }
             }
@@ -208,11 +210,13 @@ export const generateBlockGenerators = () => {
 
 
 export const generateAndUpdateCode = (workspace) => {
+    // initializeDropDowns();
+    // console.log('generating code');
     initializeDropDowns();
-    console.log('generating code');
     var code = generateCode(workspace);
-    runExtension();
     saveListOfDropDownsToCookie()
+    loadListOfDropDownsFromCookie();
+    runExtension();
     document.getElementById('codeOutput').textContent = code;
 };
 
@@ -234,15 +238,15 @@ export const clearListOfDropDowns = () => {
 export const initializeWorkspace = (workspace) => {
     generateCode(workspace);
     workspace.addChangeListener((e) => {
-        if (e.isUiEvent || e.type == Blockly.Events.FINISHED_LOADING || workspace.isDragging() || e.type == Blockly.Events.BlockFieldIntermediateChange) {
+        if (e.isUiEvent || e.type == Blockly.Events.FINISHED_LOADING || workspace.isDragging() || e.type == Blockly.Events.BlockField || e.type == Blockly.Events.BlockFieldIntermediateChange || e.type == Blockly.Events.BlockChange || e.type == Blockly.Events.UiBase) {
             return;
         }
         save(workspace);
-        console.log('generating code');
+        // console.log('generating code');
         generateAndUpdateCode(workspace);
         // listOfDropDowns = {};
         // clearListOfDropDowns();
-        console.log('done generating code');
+        // console.log('done generating code');
     });
 
     load(workspace);
