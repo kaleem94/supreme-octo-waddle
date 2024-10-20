@@ -45,6 +45,30 @@
                 {
                     "kind": "block",
                     "type": "branch_to_label_dropdown"
+                },
+                {
+                    "kind": "block",
+                    "type": "and"
+                },
+                {
+                    "kind": "block",
+                    "type": "orr"
+                },
+                {
+                    "kind": "block",
+                    "type": "eor"
+                },
+                {
+                    "kind": "block",
+                    "type": "lsl"
+                },
+                {
+                    "kind": "block",
+                    "type": "lsr"
+                },
+                {
+                    "kind": "block",
+                    "type": "asr"
                 }
             ]
         }

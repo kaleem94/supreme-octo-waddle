@@ -1,4 +1,6 @@
 const urlParams = new URLSearchParams(window.location.search);
-const foldername = urlParams.get('lang') || 'arm';
+const langname = urlParams.get('lang') || 'arm';
 
+const foldername = 'conf/' + langname;
 export { foldername };
+export { langname };

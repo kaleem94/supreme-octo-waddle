@@ -94,6 +94,36 @@
                 "listHandler": {
                     "dynamic_menu_extension_branch_to_label": "updateDropdown"
                 }
+            },
+            "and": {
+                "export": true,
+                "string": "AND %1, %2, %3\n",
+                "fields": ["DEST", "SRC1", "SRC2"]
+            },
+            "orr": {
+                "export": true,
+                "string": "ORR %1, %2, %3\n",
+                "fields": ["DEST", "SRC1", "SRC2"]
+            },
+            "eor": {
+                "export": true,
+                "string": "EOR %1, %2, %3\n",
+                "fields": ["DEST", "SRC1", "SRC2"]
+            },
+            "lsl": {
+                "export": true,
+                "string": "LSL %1, %2, %3\n",
+                "fields": ["DEST", "SRC", "SHIFT"]
+            },
+            "lsr": {
+                "export": true,
+                "string": "LSR %1, %2, %3\n",
+                "fields": ["DEST", "SRC", "SHIFT"]
+            },
+            "asr": {
+                "export": true,
+                "string": "ASR %1, %2, %3\n",
+                "fields": ["DEST", "SRC", "SHIFT"]
             }
         },
         "default_listings": {
